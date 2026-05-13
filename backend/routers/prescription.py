@@ -7,6 +7,8 @@ from models.patient import Patient
 from models.doctor import Doctor
 from models.notification import Notification
 from utils.auth import get_current_user, require_doctor
+from models.ai_alert import AIAlert
+from utils.drug_checker import check_drug_interactions
 
 router = APIRouter(prefix="/prescriptions", tags=["Prescription"])
 
@@ -56,6 +58,57 @@ async def create_prescription(data: PrescriptionRequest, current_user: dict = De
         instructions=data.instructions
     )
     await prescription.insert()
+
+    # ── AI Module 1: Drug Interaction Check ──────────────────────────
+    try:
+        # Get all existing active medications for this patient
+        existing_prescriptions = await Prescription.find(
+            Prescription.patient_id == data.patient_id,
+            Prescription.status == "active"
+        ).to_list()
+
+        # Extract all existing medicine names
+        existing_drug_names = []
+        for presc in existing_prescriptions:
+            for med in presc.medicines:
+                existing_drug_names.append(med.name)
+
+        # Check each new medicine against existing ones
+        for new_medicine in data.medicines:
+            interactions = await check_drug_interactions(
+                new_medicine.name,
+                existing_drug_names
+            )
+
+            # Save alert for each interaction found
+            for interaction in interactions:
+                alert_count = await AIAlert.count()
+                alert_id = f"ALERT-{str(alert_count + 1).zfill(4)}"
+
+                alert = AIAlert(
+                    custom_id=alert_id,
+                    patient_id=data.patient_id,
+                    module="drug_interaction",
+                    severity=interaction["severity"],
+                    message=interaction["message"]
+                )
+                await alert.insert()
+
+                # Notify doctor about the interaction
+                notif_count = await Notification.count()
+                notif_id = f"NOTIF-{str(notif_count + 1).zfill(4)}"
+                drug_notif = Notification(
+                    custom_id=notif_id,
+                    user_id=current_user["user_id"],
+                    type="drug_interaction",
+                    message=f"⚠️ Drug interaction detected: {interaction['message']}"
+                )
+                await drug_notif.insert()
+
+    except Exception as e:
+        # Never block prescription creation if AI check fails
+        print(f"Drug interaction check failed: {e}")
+    # ── End AI Module 1 ───────────────────────────────────────────────
 
     # Create notification for patient
     notification_count = await Notification.count()

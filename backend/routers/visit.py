@@ -6,6 +6,7 @@ from models.visit import Visit, Vitals
 from models.patient import Patient
 from models.doctor import Doctor
 from utils.auth import get_current_user
+from ai.deterioration_detector import run_deterioration_check
 
 router = APIRouter(prefix="/visits", tags=["Visits"])
 
@@ -54,6 +55,9 @@ async def create_visit(data: VisitRequest, current_user: dict = Depends(get_curr
         follow_up_date=data.follow_up_date
     )
     await visit.insert()
+    
+    await run_deterioration_check(visit.patient_id)
+
     return {
         "message": "Visit created successfully",
         "visit_id": custom_id,

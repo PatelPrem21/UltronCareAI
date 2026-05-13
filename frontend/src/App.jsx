@@ -1,6 +1,7 @@
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
+import EmergencyPage from './pages/EmergencyPage';
 
 // Components
 import Navbar from './components/Navbar';
@@ -62,18 +63,19 @@ const DoctorLayout = () => {
 function App() {
   return (
     <>
-      <Toaster 
-        position="top-right" 
-        toastOptions={{ 
-          style: { background: '#0d1526', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } 
-        }} 
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: { background: '#0d1526', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
+        }}
       />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/emergency/:id" element={<EmergencyPublic />} />
+        {/* <Route path="/emergency/:id" element={<EmergencyPublic />} /> */}
+        <Route path="/emergency/:patient_id" element={<EmergencyPage />} />
 
         {/* Patient Routes */}
         <Route element={<ProtectedRoute allowedRole="patient" />}>

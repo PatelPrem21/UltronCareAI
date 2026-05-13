@@ -1,24 +1,3 @@
-// colors.js — save this in frontend/src/
-export const colors = {
-  // Backgrounds
-  bg_primary: "#0f172a",      // main page background
-  bg_secondary: "#1e293b",    // cards, sidebar
-  bg_tertiary: "#334155",     // hover states, borders
-
-  // Brand
-  teal: "#38bdf8",            // primary accent, links, active
-  teal_dark: "#0891b2",       // buttons, badges
-
-  // Status
-  success: "#34d399",         // stable, confirmed
-  warning: "#fb923c",         // review, pending
-  danger: "#ef4444",          // critical, drug conflict
-
-  // Text
-  text_primary: "#f1f5f9",    // headings
-  text_secondary: "#94a3b8",  // labels, subtitles
-  text_muted: "#475569",      // timestamps, hints
-
-  // Borders
-  border: "#334155",          // all borders
-}
+venv/Scripts/Activate
+uvicorn main:app --reload
+npm run dev
